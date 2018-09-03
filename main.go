@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -27,25 +28,23 @@ func main() {
 			c.JSON(http.StatusBadRequest, err)
 			return
 		}
-		r, _ := http.NewRequest(
+		r2, _ := http.NewRequest(
 			req.Method,
 			req.URL,
 			strings.NewReader(req.Body),
 		)
 		for key, value := range req.Headers {
-			r.Header.Set(key, value)
+			r2.Header.Set(key, value)
 		}
 
 		// Content-Type 設定
 		client := &http.Client{}
-		res, err := client.Do(r)
+		res, err := client.Do(r2)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err)
 			return
 		}
-		var body []byte
-		res.Body.Read(body)
-
+		body, _ := ioutil.ReadAll(res.Body)
 		start, ok := c.Get("start_time")
 		if ok {
 			c.Header("X-Server-Latency", time.Since(start.(time.Time)).String())
